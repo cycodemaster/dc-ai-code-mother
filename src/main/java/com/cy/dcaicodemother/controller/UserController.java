@@ -1,6 +1,12 @@
 package com.cy.dcaicodemother.controller;
 
+import com.cy.dcaicodemother.common.BaseResponse;
+import com.cy.dcaicodemother.common.ResultUtils;
+import com.cy.dcaicodemother.exception.ErrorCode;
+import com.cy.dcaicodemother.exception.ThrowUtils;
+import com.cy.dcaicodemother.model.dto.user.UserRegisterRequest;
 import com.mybatisflex.core.paginate.Page;
+import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.cy.dcaicodemother.model.entity.User;
 import com.cy.dcaicodemother.service.UserService;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.util.List;
 
 /**
@@ -23,8 +30,22 @@ import java.util.List;
 @RequestMapping("/user")
 public class UserController {
 
-    @Autowired
+    @Resource
     private UserService userService;
+
+    /**
+     * 用户注册
+     *
+     * @param registerRequest 用户注册请求类
+     * @return 新用户id
+     */
+    @PostMapping("register")
+    public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest registerRequest) {
+        //校验
+        ThrowUtils.throwIf(registerRequest == null, ErrorCode.PARAMS_ERROR);
+        long result = userService.userRegister(registerRequest);
+        return ResultUtils.success(result);
+    }
 
     /**
      * 保存用户。
