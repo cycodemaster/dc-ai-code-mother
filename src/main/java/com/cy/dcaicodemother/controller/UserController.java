@@ -4,9 +4,12 @@ import com.cy.dcaicodemother.common.BaseResponse;
 import com.cy.dcaicodemother.common.ResultUtils;
 import com.cy.dcaicodemother.exception.ErrorCode;
 import com.cy.dcaicodemother.exception.ThrowUtils;
+import com.cy.dcaicodemother.model.dto.user.UserLoginRequest;
 import com.cy.dcaicodemother.model.dto.user.UserRegisterRequest;
+import com.cy.dcaicodemother.model.vo.user.LoginUserVO;
 import com.mybatisflex.core.paginate.Page;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,12 +42,46 @@ public class UserController {
      * @param registerRequest 用户注册请求类
      * @return 新用户id
      */
-    @PostMapping("register")
+    @PostMapping("/register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest registerRequest) {
         //校验
         ThrowUtils.throwIf(registerRequest == null, ErrorCode.PARAMS_ERROR);
         long result = userService.userRegister(registerRequest);
         return ResultUtils.success(result);
+    }
+
+    /**
+     * 用户登录
+     * @param userLoginRequest 用户登录请求
+     * @return 脱敏后用户
+     */
+    @PostMapping("/login")
+    public BaseResponse<LoginUserVO> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request){
+        //校验
+        ThrowUtils.throwIf(userLoginRequest == null, ErrorCode.PARAMS_ERROR);
+        LoginUserVO loginUserVO = userService.userLogin(userLoginRequest, request);
+        return ResultUtils.success(loginUserVO);
+    }
+
+    /**
+     * 获取当前登录用户
+     * @param request 请求
+     * @return 当前登录用户
+     */
+    @GetMapping("/get/login")
+    public BaseResponse<LoginUserVO> getLoginUser(HttpServletRequest request){
+        User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(userService.getLoginUserVO(loginUser));
+    }
+
+    /**
+     * 用户登出
+     * @param request 请求
+     * @return 登出结果
+     */
+    @GetMapping("/logout")
+    public BaseResponse<Boolean> userLogout(HttpServletRequest request){
+        return ResultUtils.success(userService.userLogout(request));
     }
 
     /**
