@@ -42,7 +42,7 @@ public class AuthInterceptor {
         String userRole = user.getUserRole();
         UserRoleEnum mustRoleEnum = UserRoleEnum.getByValue(mustRole);
         // 不需要校验
-        if (mustRoleEnum != null) {
+        if (mustRoleEnum == null) {
             return joinPoint.proceed();
         }
 
