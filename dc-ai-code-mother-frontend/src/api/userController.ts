@@ -65,7 +65,10 @@ export async function getUserVoById(
 }
 
 /** 此处后端没有提供注释 POST /user/list/page/vo */
-export async function getUserVoList(body: API.UserQueryRequest, options?: { [key: string]: any }) {
+export async function listUserVoByPage(
+  body: API.UserQueryRequest,
+  options?: { [key: string]: any }
+) {
   return request<API.BaseResponsePageUserVO>('/user/list/page/vo', {
     method: 'POST',
     headers: {
