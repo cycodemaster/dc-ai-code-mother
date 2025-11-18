@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: local
   application:
     name: dc-ai-code-mother-backend
   # mysql
