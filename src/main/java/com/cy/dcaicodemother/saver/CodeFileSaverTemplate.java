@@ -7,6 +7,7 @@ import com.cy.dcaicodemother.ai.model.enums.CodeGenTypeEnum;
 import com.cy.dcaicodemother.exception.BusinessException;
 import com.cy.dcaicodemother.exception.ErrorCode;
 import com.cy.dcaicodemother.exception.ThrowUtils;
+import com.cy.dcaicodemother.model.constant.AppConstant;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -17,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 public abstract class CodeFileSaverTemplate<T> {
 
     //文件保存根目录
-    protected static final String FILE_SAVE_ROOT_DIR = System.getProperty("user.dir") + "/tmp/code_output";
+    protected static final String FILE_SAVE_ROOT_DIR = AppConstant.CODE_OUTPUT_ROOT_DIR;
 
     /**
      * 保存代码文件标准流程

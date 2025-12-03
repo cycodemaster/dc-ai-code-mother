@@ -12,10 +12,7 @@ import com.cy.dcaicodemother.exception.ErrorCode;
 import com.cy.dcaicodemother.exception.ThrowUtils;
 import com.cy.dcaicodemother.model.constant.AppConstant;
 import com.cy.dcaicodemother.model.constant.UserConstant;
-import com.cy.dcaicodemother.model.dto.app.AppAddRequest;
-import com.cy.dcaicodemother.model.dto.app.AppAdminUpdateRequest;
-import com.cy.dcaicodemother.model.dto.app.AppQueryRequest;
-import com.cy.dcaicodemother.model.dto.app.AppUpdateRequest;
+import com.cy.dcaicodemother.model.dto.app.*;
 import com.cy.dcaicodemother.model.entity.User;
 import com.cy.dcaicodemother.model.vo.app.AppVO;
 import com.cy.dcaicodemother.service.UserService;
@@ -355,6 +352,28 @@ public class AppController {
                                 .event("done")
                                 .data("")
                                 .build()));
+    }
+
+    /**
+     * 部署应用
+     *
+     * @param appDeployRequest 部署应用请求
+     * @param request          请求
+     * @return 应用访问路径
+     */
+    @PostMapping("/deploy")
+    public BaseResponse<String> deployApp(@RequestBody AppDeployRequest appDeployRequest, HttpServletRequest request) {
+
+        // 参数校验
+        ThrowUtils.throwIf(appDeployRequest == null || appDeployRequest.getAppId() == null || appDeployRequest.getAppId() < 0, ErrorCode.PARAMS_ERROR);
+
+        // 获取登录用户
+        User loginUser = userService.getLoginUser(request);
+        ThrowUtils.throwIf(loginUser == null, ErrorCode.NOT_LOGIN_ERROR);
+
+        // 部署应用
+        return ResultUtils.success(appService.deployApp(appDeployRequest.getAppId(), loginUser));
+
     }
 
 }

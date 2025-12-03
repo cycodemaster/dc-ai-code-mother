@@ -45,9 +45,18 @@ public interface AppService extends IService<App> {
      * 根据提示词生成应用（流式SSE）
      *
      * @param userMessage 用户提示词
-     * @param appId 应用id
-     * @param loginUser 登录用户
+     * @param appId       应用id
+     * @param loginUser   登录用户
      * @return 流式输出
      */
     Flux<String> chatToGenCode(String userMessage, Long appId, User loginUser);
+
+    /**
+     * 部署应用
+     *
+     * @param appId     应用id
+     * @param loginUser 登录用户
+     * @return 应用访问路径
+     */
+    String deployApp(Long appId, User loginUser);
 }
