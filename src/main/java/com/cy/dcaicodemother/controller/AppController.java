@@ -2,6 +2,7 @@ package com.cy.dcaicodemother.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.cy.dcaicodemother.ai.model.enums.CodeGenTypeEnum;
 import com.cy.dcaicodemother.annotation.AuthCheck;
 import com.cy.dcaicodemother.common.BaseResponse;
@@ -23,13 +24,18 @@ import com.mybatisflex.core.query.QueryWrapper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.cy.dcaicodemother.model.entity.App;
 import com.cy.dcaicodemother.service.AppService;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 应用 控制层。
@@ -314,6 +320,41 @@ public class AppController {
         // 获取封装类
         return ResultUtils.success(appService.getAppVO(app));
 
+    }
+
+    /**
+     * 根据用户消息生成应用代码（流式SSE）
+     *
+     * @param userMessage 用户消息
+     * @param appId       应用id
+     * @param request     请求
+     * @return 生成结果流
+     */
+    @GetMapping(value = "/chat/gen/code", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ServerSentEvent<String>> chatToGenCode(@RequestParam String userMessage, @RequestParam Long appId, HttpServletRequest request) {
+
+        // 参数校验
+        ThrowUtils.throwIf(appId == null || appId < 0, ErrorCode.PARAMS_ERROR, "应用id不能为空");
+        ThrowUtils.throwIf(StrUtil.isBlank(userMessage), ErrorCode.PARAMS_ERROR, "用户消息不能为空");
+
+        // 获取登录用户
+        User loginUser = userService.getLoginUser(request);
+        ThrowUtils.throwIf(loginUser == null, ErrorCode.NOT_LOGIN_ERROR);
+
+        // 生成应用代码
+        Flux<String> contentFlux = appService.chatToGenCode(userMessage, appId, loginUser);
+        return contentFlux.map(chunk -> {
+            // 将响应封装成map，解决前端空格丢失问题
+            Map<String, String> wrapper = Map.of("d", chunk);
+            String jsonStr = JSONUtil.toJsonStr(wrapper);
+            return ServerSentEvent.<String>builder().data(jsonStr).build();
+        }).concatWith(
+                Mono.just(
+                        // 发送结束事件，防止前端无法判断正常终止还是异常终止
+                        ServerSentEvent.<String>builder()
+                                .event("done")
+                                .data("")
+                                .build()));
     }
 
 }

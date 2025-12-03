@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.cy.dcaicodemother.ai.model.enums.CodeGenTypeEnum;
 import com.cy.dcaicodemother.exception.BusinessException;
 import com.cy.dcaicodemother.exception.ErrorCode;
+import com.cy.dcaicodemother.exception.ThrowUtils;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -22,13 +23,14 @@ public abstract class CodeFileSaverTemplate<T> {
      * 保存代码文件标准流程
      *
      * @param codeResult 代码结果
+     * @param appId      应用id
      * @return 保存的目录
      */
-    protected File saveCode(T codeResult) {
+    protected File saveCode(T codeResult, Long appId) {
         // 参数校验
         validateInput(codeResult);
         // 构建唯一文件夹路径
-        String dirPath = buildUniqueDir();
+        String dirPath = buildUniqueDir(appId);
         // 保存代码文件
         saveFiles(codeResult, dirPath);
         // 返回文件路径
@@ -37,6 +39,7 @@ public abstract class CodeFileSaverTemplate<T> {
 
     /**
      * 参数校验
+     *
      * @param codeResult 代码结果
      */
     protected void validateInput(T codeResult) {
@@ -50,9 +53,10 @@ public abstract class CodeFileSaverTemplate<T> {
      *
      * @return 文件夹路径
      */
-    protected String buildUniqueDir() {
+    protected String buildUniqueDir(Long appId) {
+        ThrowUtils.throwIf(appId == null, ErrorCode.PARAMS_ERROR, "应用id不能为空");
         String codeType = getCodeType().getValue();
-        String uniqueDirName = StrUtil.format("{}_{}", codeType, IdUtil.getSnowflakeNextIdStr());
+        String uniqueDirName = StrUtil.format("{}_{}", codeType, appId);
         String dirPath = FILE_SAVE_ROOT_DIR + File.separator + uniqueDirName;
         FileUtil.mkdir(dirPath);
         return dirPath;
@@ -72,14 +76,16 @@ public abstract class CodeFileSaverTemplate<T> {
 
     /**
      * 获取代码类型
+     *
      * @return 代码类型枚举
      */
     protected abstract CodeGenTypeEnum getCodeType();
 
     /**
      * 保存代码文件
+     *
      * @param codeResult 代码结果
-     * @param dirPath 文件夹路径
+     * @param dirPath    文件夹路径
      */
     protected abstract void saveFiles(T codeResult, String dirPath);
 

@@ -19,7 +19,7 @@ class AiCodeGeneratorFacadeTest {
     @Test
     void generateAndSaveCode() {
 
-        File filePath = aiCodeGeneratorFacade.generateAndSaveCode("生成一个博客页面", CodeGenTypeEnum.MULTI_File);
+        File filePath = aiCodeGeneratorFacade.generateAndSaveCode("生成一个博客页面", CodeGenTypeEnum.MULTI_File, 1L);
         Assertions.assertNotNull(filePath);
 
     }
@@ -27,7 +27,7 @@ class AiCodeGeneratorFacadeTest {
     @Test
     void generateAndSaveCodeStream() {
 
-        Flux<String> codeStream = aiCodeGeneratorFacade.generateAndSaveCodeStream("任务记录网站", CodeGenTypeEnum.HTML);
+        Flux<String> codeStream = aiCodeGeneratorFacade.generateAndSaveCodeStream("任务记录网站", CodeGenTypeEnum.HTML, 1L);
         // 阻塞等待所有数据收集完成
         List<String> result = codeStream.collectList().block();
         // 验证结果
