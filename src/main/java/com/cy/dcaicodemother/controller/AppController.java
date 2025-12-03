@@ -301,6 +301,7 @@ public class AppController {
      * @return 应用封装类
      */
     @GetMapping("/admin/get/vo")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<AppVO> getAppVOByIdByAdmin(long id) {
 
         // 参数校验

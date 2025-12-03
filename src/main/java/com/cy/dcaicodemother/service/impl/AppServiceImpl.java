@@ -1,6 +1,7 @@
 package com.cy.dcaicodemother.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.cy.dcaicodemother.exception.ErrorCode;
 import com.cy.dcaicodemother.exception.ThrowUtils;
@@ -88,7 +89,9 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
     @Override
     public List<AppVO> getAppVOList(List<App> appList) {
         // 参数校验
-        ThrowUtils.throwIf(CollectionUtil.isEmpty(appList), ErrorCode.PARAMS_ERROR);
+        if (CollUtil.isEmpty(appList)){
+            return CollUtil.newArrayList();
+        }
 
         // 批量查询创建用户信息
         Set<Long> userIds = appList.stream().map(App::getUserId).collect(Collectors.toSet());
