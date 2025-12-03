@@ -37,8 +37,6 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
     @Resource
     private UserService userService;
     @Resource
-    private AppService appService;
-    @Resource
     private AiCodeGeneratorFacade aiCodeGeneratorFacade;
 
     @Override
@@ -123,7 +121,7 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         ThrowUtils.throwIf(StrUtil.isBlank(userMessage), ErrorCode.PARAMS_ERROR, "用户消息不能为空");
 
         // 仅应用创建人可生成应用
-        App app = appService.getById(appId);
+        App app = getById(appId);
         ThrowUtils.throwIf(app == null, ErrorCode.NOT_FOUND_ERROR, "应用不存在");
         ThrowUtils.throwIf(!loginUser.getId().equals(app.getUserId()), ErrorCode.NO_AUTH_ERROR, "无权限访问该应用");
 
