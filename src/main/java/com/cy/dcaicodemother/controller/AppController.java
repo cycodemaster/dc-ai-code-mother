@@ -3,6 +3,7 @@ package com.cy.dcaicodemother.controller;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.cy.dcaicodemother.ai.model.enums.CodeGenTypeEnum;
+import com.cy.dcaicodemother.annotation.AuthCheck;
 import com.cy.dcaicodemother.common.BaseResponse;
 import com.cy.dcaicodemother.common.DeleteRequest;
 import com.cy.dcaicodemother.common.ResultUtils;
@@ -11,6 +12,7 @@ import com.cy.dcaicodemother.exception.ThrowUtils;
 import com.cy.dcaicodemother.model.constant.AppConstant;
 import com.cy.dcaicodemother.model.constant.UserConstant;
 import com.cy.dcaicodemother.model.dto.app.AppAddRequest;
+import com.cy.dcaicodemother.model.dto.app.AppAdminUpdateRequest;
 import com.cy.dcaicodemother.model.dto.app.AppQueryRequest;
 import com.cy.dcaicodemother.model.dto.app.AppUpdateRequest;
 import com.cy.dcaicodemother.model.entity.User;
@@ -20,6 +22,7 @@ import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.cy.dcaicodemother.model.entity.App;
@@ -215,6 +218,101 @@ public class AppController {
         List<AppVO> appVOList = appService.getAppVOList(appPage.getRecords());
         appVOPage.setRecords(appVOList);
         return ResultUtils.success(appVOPage);
+    }
+
+    /**
+     * 管理员删除应用
+     *
+     * @param deleteRequest 删除应用请求
+     * @return 删除结果
+     */
+    @PostMapping("/admin/delete")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> deleteAppByAdmin(@RequestBody DeleteRequest deleteRequest) {
+
+        // 参数校验：检查删除请求参数和ID是否为空
+        ThrowUtils.throwIf(deleteRequest == null || deleteRequest.getId() == null, ErrorCode.PARAMS_ERROR);
+
+        // 校验应用是否存在
+        App oldApp = appService.getById(deleteRequest.getId());
+        ThrowUtils.throwIf(oldApp == null, ErrorCode.NOT_FOUND_ERROR);
+
+        // 删除应用
+        boolean result = appService.removeById(deleteRequest.getId());
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        return ResultUtils.success(true);
+    }
+
+    /**
+     * 管理员更新应用
+     *
+     * @param appAdminUpdateRequest 管理员更新应用请求
+     * @return 更新结果
+     */
+    @PostMapping("/admin/update")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> updateAppByAdmin(@RequestBody AppAdminUpdateRequest appAdminUpdateRequest) {
+
+        // 参数校验
+        ThrowUtils.throwIf(appAdminUpdateRequest == null || appAdminUpdateRequest.getId() < 0, ErrorCode.PARAMS_ERROR);
+
+        // 查询应用是否存在
+        App oldApp = appService.getById(appAdminUpdateRequest.getId());
+        ThrowUtils.throwIf(oldApp == null, ErrorCode.NOT_FOUND_ERROR);
+
+        // 更新应用信息
+        App app = new App();
+        BeanUtils.copyProperties(appAdminUpdateRequest, app);
+        app.setEditTime(LocalDateTime.now());
+        boolean result = appService.updateById(app);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        return ResultUtils.success(true);
+    }
+
+    /**
+     * 管理员分页查询应用
+     *
+     * @param appQueryRequest 应用查询请求
+     * @return 应用列表
+     */
+    @PostMapping("/admin/list/page/vo")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Page<AppVO>> listAppVOByPageByAdmin(@RequestBody AppQueryRequest appQueryRequest) {
+
+        // 参数校验
+        ThrowUtils.throwIf(appQueryRequest == null, ErrorCode.PARAMS_ERROR);
+
+        // 分页查询应用
+        int pageNum = appQueryRequest.getPageNum();
+        int pageSize = appQueryRequest.getPageSize();
+        Page<App> appPage = appService.page(Page.of(pageNum, pageSize), appService.getQueryWrapper(appQueryRequest));
+
+        // 数据封装
+        Page<AppVO> appVOPage = new Page<>(pageNum, pageSize, appPage.getTotalRow());
+        List<AppVO> appVOList = appService.getAppVOList(appPage.getRecords());
+        appVOPage.setRecords(appVOList);
+        return ResultUtils.success(appVOPage);
+    }
+
+    /**
+     * 管理员根据id获取应用详情
+     *
+     * @param id 应用id
+     * @return 应用封装类
+     */
+    @GetMapping("/admin/get/vo")
+    public BaseResponse<AppVO> getAppVOByIdByAdmin(long id) {
+
+        // 参数校验
+        ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
+
+        // 获取应用信息
+        App app = appService.getById(id);
+        ThrowUtils.throwIf(app == null, ErrorCode.NOT_FOUND_ERROR);
+
+        // 获取封装类
+        return ResultUtils.success(appService.getAppVO(app));
+
     }
 
 }
